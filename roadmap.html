@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Roadmap Tamagochi</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; text-align: center; background-color: #f0f9ff; }
+        #game-container { position: relative; display: inline-block; margin-top: 20px; }
+        canvas { border: 5px solid #ffcc00; border-radius: 15px; background: #fff; cursor: pointer; }
+        
+        /* Gaya untuk Popup Pertanyaan */
+        #quiz-overlay {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); background: white;
+            padding: 30px; border-radius: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 100; width: 300px;
+        }
+        .btn-ans { display: block; width: 100%; margin: 10px 0; padding: 10px; cursor: pointer; border-radius: 10px; border: 1px solid #ddd; }
+        .btn-ans:hover { background-color: #e0f2fe; }
+    </style>
+</head>
+<body>
+
+    <h1>Petualangan Tamagochi! 🌟</h1>
+    
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+
+        <div id="quiz-overlay">
+            <h3 id="question-text">Pertanyaan</h3>
+            <div id="options-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const quizOverlay = document.getElementById('quiz-overlay');
+
+        // Data Checkpoint (Koordinat X, Y mengikuti gambar roadmap kamu)
+        const checkpoints = [
+            { x: 450, y: 440 }, { x: 580, y: 380 }, { x: 620, y: 280 },
+            { x: 500, y: 240 }, { x: 380, y: 210 }, { x: 280, y: 160 },
+            { x: 260, y: 70 },  { x: 380, y: 40 },  { x: 530, y: 50 }, { x: 620, y: 100 }
+        ];
+
+        let currentCheckpoint = 0;
+        let currentQuestionIndex = 0;
+        const questionsPerCheckpoint = 3;
+
+        // Gambar Tamagochi (Ganti URL dengan file aslimu nanti)
+        const tamagoImg = new Image();
+        tamagoImg.src = 'Gemini_Generated_Image_xovzqbxovzqbxovz.jpg'; // Pastikan file satu folder
+
+        // Contoh Data Pertanyaan
+        const quizData = [
+            { q: "Apa warna pisang?", a: ["Kuning", "Biru"], correct: 0 },
+            { q: "1 + 1 = ?", a: ["2", "3"], correct: 0 },
+            { q: "Suara kucing?", a: ["Meow", "Guk"], correct: 0 }
+            // Tambahkan pertanyaan lain sampai total 30 (10 cp x 3 q)
+        ];
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 1. Gambar Jalur Sederhana (Ganti dengan background gambar roadmap kamu nanti)
+            ctx.beginPath();
+            ctx.moveTo(checkpoints[0].x, checkpoints[0].y);
+            checkpoints.forEach(cp => ctx.lineTo(cp.x, cp.y));
+            ctx.strokeStyle = "#8B4513";
+            ctx.lineWidth = 40;
+            ctx.stroke();
+
+            // 2. Gambar Checkpoint Circle
+            checkpoints.forEach((cp, index) => {
+                ctx.beginPath();
+                ctx.arc(cp.x, cp.y, 15, 0, Math.PI * 2);
+                ctx.fillStyle = index <= currentCheckpoint ? "#4CAF50" : "#ccc";
+                ctx.fill();
+            });
+
+            // 3. Gambar Karakter Tamagochi di posisi saat ini
+            const pos = checkpoints[currentCheckpoint];
+            ctx.drawImage(tamagoImg, pos.x - 30, pos.y - 40, 60, 60);
+        }
+
+        // Logika Klik Checkpoint
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const target = checkpoints[currentCheckpoint];
+            const dist = Math.hypot(mouseX - target.x, mouseY - target.y);
+
+            if (dist < 30) {
+                showQuiz();
+            }
+        });
+
+        function showQuiz() {
+            if (currentQuestionIndex < questionsPerCheckpoint) {
+                quizOverlay.style.display = 'block';
+                const data = quizData[0]; // Harusnya looping sesuai index pertanyaan
+                document.getElementById('question-text').innerText = `Soal ${currentQuestionIndex + 1}: ${data.q}`;
+                
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+                data.a.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-ans';
+                    btn.innerText = opt;
+                    btn.onclick = () => checkAnswer(i);
+                    container.appendChild(btn);
+                });
+            }
+        }
+
+        function checkAnswer(idx) {
+            // Logika sederhana: Benar semua lanjut
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= questionsPerCheckpoint) {
+                alert("Hebat! Kamu lanjut ke pos berikutnya!");
+                quizOverlay.style.display = 'none';
+                currentQuestionIndex = 0;
+                if (currentCheckpoint < checkpoints.length - 1) {
+                    currentCheckpoint++;
+                } else {
+                    alert("HORE! Kamu sampai di rumah!");
+                }
+            }
+            drawGame();
+        }
+
+        tamagoImg.onload = drawGame;
+    </script>
+</body>
+</html>
